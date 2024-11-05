@@ -11,7 +11,7 @@ import os
 
 struct RegistrationView: View {
     
-    @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var shared: NavigationManager
     @State private var email: String = ""
     @State private var password: String = ""
     
@@ -29,7 +29,7 @@ struct RegistrationView: View {
             
             Button {
                 //                createUser(email, password)
-                navigationManager.push(.chatView)
+                shared.path.append(NavigationDestination.chatView)
                 
             } label: {
                 Text("Register")
@@ -47,7 +47,7 @@ struct RegistrationView: View {
                 if let e = error {
                     print(e) // if we wanna actually deploy this app, we neet to throw back this error to the user
                 } else {
-                    self.navigationManager.push(.chatView)
+                    shared.path.append(NavigationDestination.chatView)
                 }
             }
         }

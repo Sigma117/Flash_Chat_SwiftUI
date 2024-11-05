@@ -9,49 +9,59 @@ import SwiftUI
 
 struct WelcomeView: View {
     
-    @EnvironmentObject var navigationManager: NavigationManager
+    @EnvironmentObject var shared: NavigationManager
     @State private var titleLabel = ""
     @State private var charIndex = 0.0
     let titleText = "⚡️ FlashChat"
     
     var body: some View {
         
-        VStack {
-            Spacer()
-            HStack {
+        NavigationStack(path: $shared.path) {
+            VStack {
+                Spacer()
+                    Text(titleLabel)
+                        .bold()
+                        .font(.largeTitle)
+                        .italic()
+                        .foregroundStyle(Color .blue)
+                Spacer()
+
                 
-                Text(titleLabel)
-                    .bold()
-                    .font(.largeTitle)
-                    .italic()
-                    .foregroundStyle(Color .blue)
-                    
-            }
-            Spacer()
-            Button {
-                navigationManager.push(.registrationView)
-                titleLabel = ""
-                charIndex = 0.0
-            } label: {
-                Text("sign in")
-                    .modifier(ModifierTextStyle())
-            }
-            
-            Button {
-                navigationManager.push(.loginView)
-                titleLabel = ""
-                charIndex = 0.0
-            } label: {
-                Text("login")
-                    .modifier(ModifierTextStyle())
-            }
-            Spacer()
-        }.onAppear {
-            for letter in titleText {
-                Timer.scheduledTimer(withTimeInterval: 0.1 * charIndex, repeats: false) { timer in
-                    titleLabel.append(letter)
+                Button {
+                    shared.path.append(NavigationDestination.loginView)
+                } label: {
+                    Text("Login")
+                        .modifier(ModifierTextStyle())
                 }
-                self.charIndex += 1
+                Button {
+                    shared.path.append(NavigationDestination.registrationView)
+                } label: {
+                    Text("Registration")
+                        .modifier(ModifierTextStyle())
+                }
+                Spacer()
+            }.onAppear {
+                for letter in titleText {
+                    Timer.scheduledTimer(withTimeInterval: 0.1 * charIndex, repeats: false) { timer in
+                        titleLabel.append(letter)
+                    }
+                    self.charIndex += 1
+                }
+            }.onDisappear {
+                titleLabel = ""
+                charIndex = 0.0
+            }
+            .navigationDestination(for: NavigationDestination.self) { destination in
+                switch destination {
+                case .registrationView:
+                    RegistrationView()
+                case .loginView:
+                    LoginView()
+                case .welcomeView:
+                    WelcomeView()
+                case .chatView:
+                    ChatView()
+                }
             }
         }
     }

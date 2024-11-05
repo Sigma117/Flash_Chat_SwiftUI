@@ -11,13 +11,14 @@ import SwiftUI
 
 struct LoginView: View {
     
-    @EnvironmentObject var naviagationManager: NavigationManager
+    @EnvironmentObject var shared: NavigationManager
     var body: some View {
         
         Button {
-            naviagationManager.push(.welcomeView)
+            shared.path.append(NavigationDestination.welcomeView)
         } label: {
             Text("test")
+                .font(.title)
         }
     }
 }
