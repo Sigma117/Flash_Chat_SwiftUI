@@ -57,7 +57,7 @@ struct ChatView: View {
                     Button {
                         do {
                             try Auth.auth().signOut()
-                            shared.path = NavigationPath()
+                            shared.path = NavigationPath() // reset the stack
                         } catch let signOutError as NSError {
                             print("Error signing out: %@", signOutError)
                         }

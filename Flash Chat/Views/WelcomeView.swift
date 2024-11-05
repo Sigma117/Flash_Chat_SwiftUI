@@ -12,7 +12,7 @@ struct WelcomeView: View {
     @EnvironmentObject var shared: NavigationManager
     @State private var titleLabel = ""
     @State private var charIndex = 0.0
-    let titleText = "⚡️ FlashChat"
+    let titleText = K.appName
     
     var body: some View {
         
@@ -25,7 +25,13 @@ struct WelcomeView: View {
                         .italic()
                         .foregroundStyle(Color .blue)
                 Spacer()
-
+                
+                Button {
+                    shared.path.append(NavigationDestination.registrationView)
+                } label: {
+                    Text("Registration")
+                        .modifier(ModifierTextStyle())
+                }
                 
                 Button {
                     shared.path.append(NavigationDestination.loginView)
@@ -33,12 +39,7 @@ struct WelcomeView: View {
                     Text("Login")
                         .modifier(ModifierTextStyle())
                 }
-                Button {
-                    shared.path.append(NavigationDestination.registrationView)
-                } label: {
-                    Text("Registration")
-                        .modifier(ModifierTextStyle())
-                }
+
                 Spacer()
             }.onAppear {
                 for letter in titleText {
