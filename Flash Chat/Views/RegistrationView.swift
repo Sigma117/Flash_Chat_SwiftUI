@@ -14,27 +14,28 @@ struct RegistrationView: View {
     @EnvironmentObject var shared: NavigationManager
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var showAlert: Bool = false
+    @State private var errorMessage: String?
     
     
     var body: some View {
         
         VStack {
             
-            TextField("email", text: $email)
+            TextField("Email", text: $email)
                 .modifier(ModifierTextFieldStyle())
             
-            SecureField("passoword", text: $password)
+            SecureField("Passoword", text: $password)
                 .modifier(ModifierTextFieldStyle())
-            
             
             Button {
-                //                createUser(email, password)
-                shared.path.append(NavigationDestination.chatView)
-                
+                createUser(email, password)
             } label: {
                 Text("Register")
                     .modifier(ModifierTextStyle())
             }
+        }.alert(isPresented: $showAlert) {
+            Alert(title: Text("Error"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
         }
     }
     
@@ -45,7 +46,9 @@ struct RegistrationView: View {
         } else {
             Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
                 if let e = error {
-                    print(e) // if we wanna actually deploy this app, we neet to throw back this error to the user
+                    errorMessage = e.localizedDescription
+                    showAlert = true
+                    //.localizedDescription give the user the error in the language they selected in the phone
                 } else {
                     shared.path.append(NavigationDestination.chatView)
                 }
