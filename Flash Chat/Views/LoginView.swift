@@ -14,8 +14,6 @@ import FirebaseAuth
 struct LoginView: View {
     
     @EnvironmentObject var shared: NavigationManager
-//    @State private var email: String = ""
-//    @State private var password: String = ""    
     @State private var email: String = "1@2.com"
     @State private var password: String = "123456"
     @State private var showAlert: Bool = false
