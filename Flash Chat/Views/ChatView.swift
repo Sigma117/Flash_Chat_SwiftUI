@@ -50,23 +50,24 @@ struct ChatView: View {
     
     func loadMessages() {
         self.messages = []
-        db.collection(K.FStore.collectionName).getDocuments { querySnapshot, error in
+        db.collection(K.FStore.collectionName).addSnapshotListener { querySnapshot, error in
             if let e = error {
                 print("There was an issue retrieving data from Firestore. \(e)")
             } else {
                 if let snapshotDocuments = querySnapshot?.documents {
+                    messages = []
                     for doc in snapshotDocuments {
                         let data = doc.data()
                         if let sender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
                             let newMessage = Message(sender: sender, body: messageBody)
                             self.messages.append(newMessage)
-                            
                         }
                     }
                 }
             }
         }
     }
+
     
     func sendMessage() {
         if let messageSender = Auth.auth().currentUser?.email {
@@ -87,3 +88,25 @@ struct ChatView: View {
 #Preview {
     ChatView()
 }
+
+
+// MARK: versione che carica i dati una volta
+// cambia solo il .getDocuments che diventa .addSnapshotListener
+//    func loadMessages() {
+//        self.messages = []
+//        db.collection(K.FStore.collectionName).getDocuments { querySnapshot, error in
+//            if let e = error {
+//                print("There was an issue retrieving data from Firestore. \(e)")
+//            } else {
+//                if let snapshotDocuments = querySnapshot?.documents {
+//                    for doc in snapshotDocuments {
+//                        let data = doc.data()
+//                        if let sender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
+//                            let newMessage = Message(sender: sender, body: messageBody)
+//                            self.messages.append(newMessage)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
