@@ -16,12 +16,7 @@ struct ChatView: View {
     @State private var newMessage: String = ""
     let db = Firestore.firestore()
     
-    var messages: [Message] = [
-        Message(sender: "1@2.com", body: "Hey"),
-        Message(sender: "a@b.com", body: "Hello"),
-        Message(sender: "1@2.com", body: "What's up?")
-        
-    ]
+    @State private var messages: [Message] = []
     
     
     var body: some View {
@@ -35,7 +30,6 @@ struct ChatView: View {
                                 .id(message)
                         }
                     }
-
                 }
 
                 HStack {
@@ -49,11 +43,32 @@ struct ChatView: View {
                 }
                 .padding()
             }
+        }.onAppear() {
+            loadMessages()
+        }
+    }
+    
+    func loadMessages() {
+        self.messages = []
+        db.collection(K.FStore.collectionName).getDocuments { querySnapshot, error in
+            if let e = error {
+                print("There was an issue retrieving data from Firestore. \(e)")
+            } else {
+                if let snapshotDocuments = querySnapshot?.documents {
+                    for doc in snapshotDocuments {
+                        let data = doc.data()
+                        if let sender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
+                            let newMessage = Message(sender: sender, body: messageBody)
+                            self.messages.append(newMessage)
+                            
+                        }
+                    }
+                }
+            }
         }
     }
     
     func sendMessage() {
-        
         if let messageSender = Auth.auth().currentUser?.email {
             let messageBody = newMessage
             db.collection(K.FStore.collectionName).addDocument(data: [

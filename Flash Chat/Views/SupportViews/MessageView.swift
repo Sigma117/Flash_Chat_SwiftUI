@@ -26,7 +26,7 @@ struct MessageView: View {
 //                Spacer()
 //            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .trailing)
         .padding()
     }
 }
