@@ -8,12 +8,17 @@
 import SwiftUI
 import SwiftData
 import FirebaseCore
+import FirebaseFirestore
 
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
+        
+        let db = Firestore.firestore()
+        
+        print(db) // per controlalre se funziona
         return true
     }
 }
@@ -22,7 +27,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct Flash_ChatApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var path = NavigationManager.shared
+    @StateObject private var shared = NavigationManager.shared
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -40,7 +45,7 @@ struct Flash_ChatApp: App {
     var body: some Scene {
         WindowGroup {
             WelcomeView()
-                .environmentObject(path)
+                .environmentObject(shared)
                 .modelContainer(sharedModelContainer)
         }
     }

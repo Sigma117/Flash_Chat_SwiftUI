@@ -8,12 +8,13 @@
 import Combine
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
 
 struct ChatView: View {
     
     @EnvironmentObject var shared: NavigationManager
-    @State var newMessage: String = ""
-    
+    @State private var newMessage: String = ""
+    let db = Firestore.firestore()
     
     var messages: [Message] = [
         Message(sender: "1@2.com", body: "Hey"),
@@ -24,11 +25,7 @@ struct ChatView: View {
     
     
     var body: some View {
-        
-        //        List(messages, id: \.self) { message in
-        //            MessageView(currentMessage: message)
-        //                .listRowSeparator(.hidden)
-        //        }
+
         VStack {
             ScrollViewReader { proxy in
                 ScrollView {
@@ -38,19 +35,9 @@ struct ChatView: View {
                                 .id(message)
                         }
                     }
-//                    .onReceive(Just(messages)) { _ in
-//                        withAnimation {
-//                            proxy.scrollTo(messages.last, anchor: .bottom)
-//                        }
-//                        
-//                    }.onAppear {
-//                        withAnimation {
-//                            proxy.scrollTo(messages.last, anchor: .bottom)
-//                        }
-//                    }
+
                 }
-                
-                // send new message
+
                 HStack {
                     TextField("Send a message", text: $newMessage)
                         .textFieldStyle(.roundedBorder)
@@ -67,11 +54,18 @@ struct ChatView: View {
     
     func sendMessage() {
         
-//        if !newMessage.isEmpty{
-//            messages.append(Message(content: newMessage, isCurrentUser: true))
-//            messages.append(Message(content: "Reply of " + newMessage , isCurrentUser: false))
-//            newMessage = ""
-//        }
+        if let messageSender = Auth.auth().currentUser?.email {
+            let messageBody = newMessage
+            db.collection(K.FStore.collectionName).addDocument(data: [
+                K.FStore.senderField: messageSender,
+                K.FStore.bodyField: messageBody]) { error in
+                    if let e = error {
+                        print("Error adding document: \(e)")
+                    } else {
+                        print("Successfully saved data")
+                    }
+                }
+        }
     }
 }
 
