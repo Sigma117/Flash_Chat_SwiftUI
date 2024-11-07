@@ -31,6 +31,12 @@ struct ChatView: View {
                                 .id(message)
                         }
                     }
+                }.onChange(of: messages) { _, _ in
+                    if let last = messages.last {
+                        withAnimation{
+                            proxy.scrollTo(last, anchor: .bottom)
+                        }
+                    }
                 }
                 
                 HStack {
@@ -38,17 +44,22 @@ struct ChatView: View {
                         .textFieldStyle(.roundedBorder)
                         .focused($isFocused)
                     Button {
-                        sendMessage()
+                        DispatchQueue.main.async {
+                            sendMessage()
+
+                        }
+                        
                     } label: {
                         Image(systemName: "paperplane")
                     }
                 }.padding()
             }
         }
+        .onAppear() {
+            loadMessages()
+        }
         .onTapGesture {
             isFocused = false
-        }.onAppear() {
-            loadMessages()
         }.gesture(
             DragGesture().onChanged { _ in
                 isFocused = false
@@ -82,6 +93,8 @@ struct ChatView: View {
     func sendMessage() {
         if let messageSender = Auth.auth().currentUser?.email {
             let messageBody = newMessage
+            newMessage = "" // is here and not after the else because, other wise we need to wait for the firestore before cleaning the TextField
+            
             db.collection(K.FStore.collectionName).addDocument(data: [
                 K.FStore.senderField: messageSender,
                 K.FStore.bodyField: messageBody,
@@ -91,7 +104,6 @@ struct ChatView: View {
                     print("Error adding document: \(e)")
                 } else {
                     print("Successfully saved data")
-                    newMessage = ""
                 }
             }
         }
@@ -102,24 +114,3 @@ struct ChatView: View {
     ChatView()
 }
 
-
-// MARK: versione che carica i dati una volta
-// cambia solo il .getDocuments che diventa .addSnapshotListener
-//    func loadMessages() {
-//        self.messages = []
-//        db.collection(K.FStore.collectionName).getDocuments { querySnapshot, error in
-//            if let e = error {
-//                print("There was an issue retrieving data from Firestore. \(e)")
-//            } else {
-//                if let snapshotDocuments = querySnapshot?.documents {
-//                    for doc in snapshotDocuments {
-//                        let data = doc.data()
-//                        if let sender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
-//                            let newMessage = Message(sender: sender, body: messageBody)
-//                            self.messages.append(newMessage)
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }

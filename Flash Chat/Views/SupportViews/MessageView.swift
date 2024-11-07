@@ -6,32 +6,39 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct MessageView: View {
     var currentMessage: Message
     
     var body: some View {
-        HStack(alignment: .bottom, spacing: 10) {
-            MessageCell(contentMessage: currentMessage.body)
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .frame(width: 30, height: 30, alignment: .center)
-                .cornerRadius(20)
-//            if !currentMessage.isCurrentUser {
-//                Image(systemName: "person.circle.fill")
-//                    .resizable()
-//                    .frame(width: 40, height: 40, alignment: .center)
-//                    .cornerRadius(20)
-//            } else {
-//                Spacer()
-//            }
+        if let messageSender = Auth.auth().currentUser?.email {
+            let isCurrentUser = (currentMessage.sender == messageSender)
+            
+            HStack(alignment: .bottom, spacing: 10) {
+                if !isCurrentUser {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30, alignment: .center)
+                        .cornerRadius(20)
+                    MessageCell(currentMessage: currentMessage.body, isCurrentUser: isCurrentUser)
+                    Spacer()
+                } else {
+                    Spacer()
+                    MessageCell(currentMessage: currentMessage.body, isCurrentUser: isCurrentUser)
+                    Image(systemName: "person.circle")
+                        .resizable()
+                        .frame(width: 30, height: 30, alignment: .center)
+                        .cornerRadius(20)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
         }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding()
     }
 }
 
 
 #Preview {
-    MessageView(currentMessage: Message(sender: "1@2.com", body: "This is a single message cell with avatar. If user is current user, we won't display the avatar."))
+//    MessageView(currentMessage: Message(sender: "1@2.com", body: "This is a single message cell with avatar. If user is current user, we won't display the avatar."), phoneUser: true)
 }

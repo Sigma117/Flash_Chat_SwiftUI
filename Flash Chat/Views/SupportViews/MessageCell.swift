@@ -8,20 +8,20 @@
 import SwiftUI
 
 struct MessageCell: View {
-    var contentMessage: String
-//    @Binding var userEmail: String
+    var currentMessage: String
+    var isCurrentUser: Bool
     
     var body: some View {
-        Text(contentMessage)
+        
+        Text(currentMessage)
             .padding(10)
-            .foregroundColor(Color.white)
-            .background(Color.blue)
-//            .foregroundColor(userEmail ? Color.white : Color.black)
-//            .background(userEmail ==  ? Color.blue : Color(UIColor.systemGray6 ))
+            .foregroundColor(isCurrentUser ? Color.white : Color.black)
+            .background(isCurrentUser ? Color.blue : Color(UIColor.systemGray ))
             .cornerRadius(10)
+        
     }
 }
 
 #Preview {
-    MessageCell(contentMessage: "Ciao")
+    MessageCell(currentMessage: "Ciao", isCurrentUser: true)
 }
