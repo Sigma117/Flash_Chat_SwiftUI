@@ -40,5 +40,6 @@ struct MessageView: View {
 
 
 #Preview {
-//    MessageView(currentMessage: Message(sender: "1@2.com", body: "This is a single message cell with avatar. If user is current user, we won't display the avatar."), phoneUser: true)
+    MessageView(currentMessage: Message(sender: "1@2.com", body: "This is a single message cell with avatar. If user is current user, we won't display the avatar."))
 }
+

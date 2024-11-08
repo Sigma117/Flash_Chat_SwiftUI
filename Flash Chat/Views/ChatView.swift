@@ -14,7 +14,9 @@ struct ChatView: View {
     
     @EnvironmentObject var shared: NavigationManager
     @State private var newMessage: String = ""
+    @State private var isKeyboardPresent: Bool = false
     @FocusState private var isFocused: Bool
+    
     let db = Firestore.firestore()
     
     @State private var messages: [Message] = []
@@ -33,8 +35,12 @@ struct ChatView: View {
                     }
                 }.onChange(of: messages) { _, _ in
                     if let last = messages.last {
-                        withAnimation{
-                            proxy.scrollTo(last, anchor: .bottom)
+                        scroolToBottom(proxy, last)
+                    }
+                }.onReceive(keyboardPublisher) { value in
+                    if value == true {
+                        if let last = messages.last {
+                            scroolToBottom(proxy, last)
                         }
                     }
                 }
@@ -46,7 +52,6 @@ struct ChatView: View {
                     Button {
                         DispatchQueue.main.async {
                             sendMessage()
-
                         }
                         
                     } label: {
@@ -65,6 +70,7 @@ struct ChatView: View {
                 isFocused = false
             }
         )
+        
     }
     
     func loadMessages() {
@@ -107,6 +113,30 @@ struct ChatView: View {
                 }
             }
         }
+    }
+    
+    func scroolToBottom(_ proxy: ScrollViewProxy, _ last: Message) {
+        withAnimation{
+            proxy.scrollTo(last, anchor: .bottom)
+        }
+    }
+}
+
+extension View {
+    
+    var keyboardPublisher: AnyPublisher<Bool, Never> {
+        Publishers
+            .Merge(
+                NotificationCenter
+                    .default
+                    .publisher(for: UIResponder.keyboardWillShowNotification)
+                    .map { _ in true },
+                NotificationCenter
+                    .default
+                    .publisher(for: UIResponder.keyboardWillHideNotification)
+                    .map { _ in false })
+            .debounce(for: .seconds(0.1), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
     }
 }
 

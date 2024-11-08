@@ -62,12 +62,12 @@ struct WelcomeView: View {
                     WelcomeView()
                 case .chatView:
                     ChatView()
+                        .navigationBarBackButtonHidden(true)
                 }
             }
         }
     }
 }
-
 
 #Preview {
     WelcomeView()

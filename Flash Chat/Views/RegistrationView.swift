@@ -12,6 +12,7 @@ import os
 struct RegistrationView: View {
     
     @EnvironmentObject var shared: NavigationManager
+    @EnvironmentObject var authManager: AuthManager
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showAlert: Bool = false
@@ -32,7 +33,15 @@ struct RegistrationView: View {
             
             Button {
                 disableButton = true
-                createUser(email, password)
+                authManager.createUser(email, password) { error in
+                    if let e = error {
+                        errorMessage = e.localizedDescription
+                        showAlert = true
+                        disableButton = false
+                    } else {
+                        shared.path.append(NavigationDestination.chatView)
+                    }
+                }
             } label: {
                 Text("Register")
                     .modifier(ModifierTextStyle())
@@ -42,25 +51,6 @@ struct RegistrationView: View {
         }
         .onAppear {
             disableButton = false
-        }
-    }
-    
-    
-    func createUser(_ email: String, _ password: String) {
-        if email.isEmpty || password.isEmpty {
-            os.Logger(subsystem: "RegistrationView", category: "Auth").debug("Email or password is empty")
-            disableButton = false
-        } else {
-            Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-                if let e = error {
-                    errorMessage = e.localizedDescription
-                    showAlert = true
-                    disableButton = false
-                    //.localizedDescription give the user the error in the language they selected in the phone
-                } else {
-                    shared.path.append(NavigationDestination.chatView)
-                }
-            }
         }
     }
 }

@@ -28,6 +28,7 @@ struct Flash_ChatApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var shared = NavigationManager.shared
+    @StateObject private var authManager = AuthManager()
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -46,6 +47,7 @@ struct Flash_ChatApp: App {
         WindowGroup {
             WelcomeView()
                 .environmentObject(shared)
+                .environmentObject(authManager)
                 .modelContainer(sharedModelContainer)
         }
     }
