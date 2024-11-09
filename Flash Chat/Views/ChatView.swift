@@ -69,7 +69,16 @@ struct ChatView: View {
             DragGesture().onChanged { _ in
                 isFocused = false
             }
-        )
+        ).toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    logout()
+                    shared.path = NavigationPath()
+                } label: {
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                }
+            }
+        }
         
     }
     
@@ -112,6 +121,15 @@ struct ChatView: View {
                     print("Successfully saved data")
                 }
             }
+        }
+    }
+    
+    func logout() {
+        let firebaseAuth = Auth.auth()
+        do {
+          try firebaseAuth.signOut()
+        } catch let signOutError as NSError {
+          print("Error signing out: %@", signOutError)
         }
     }
     
