@@ -52,3 +52,28 @@ class FirestoreMessageManager {
             }
     }
 }
+
+
+/*
+func loadMessages() {
+    self.messages = []
+    db.collection(K.FStore.collectionName)
+        .order(by: K.FStore.dateField)
+        .addSnapshotListener { querySnapshot, error in
+            if let e = error {
+                print("There was an issue retrieving data from Firestore. \(e)")
+            } else {
+                if let snapshotDocuments = querySnapshot?.documents {
+                    messages = []
+                    for doc in snapshotDocuments {
+                        let data = doc.data()
+                        if let sender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
+                            let newMessage = Message(sender: sender, body: messageBody)
+                            self.messages.append(newMessage)
+                        }
+                    }
+                }
+            }
+        }
+}
+*/

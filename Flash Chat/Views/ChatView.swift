@@ -17,7 +17,7 @@ struct ChatView: View {
     
     // Firebase
     @EnvironmentObject var authManager: AuthManager
-    @State private var firestoreMassageManager = FirestoreMessageManager()
+    @State private var firestoreMessageManager = FirestoreMessageManager()
     
     
     // Alert, Button, Keyboard
@@ -32,50 +32,22 @@ struct ChatView: View {
     var body: some View {
         
         VStack {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack {
-                        ForEach(messages, id: \.self) { message in
-                            MessageView(currentMessage: message)
-                                .id(message)
+            
+            ScrollMessagesView(messages: $messages)
+            InputMessageBar(newMessage: $newMessage, isFocused: $isFocused) {
+                DispatchQueue.main.async {
+                    firestoreMessageManager.sendMessage(newMessage) { error in
+                        if let e = error {
+                            errorMessage = e.localizedDescription
+                            showAlert = true
                         }
                     }
-                }.onChange(of: messages) { _, _ in
-                    if let last = messages.last {
-                        scroolToBottom(proxy, last)
-                    }
-                }.onReceive(keyboardPublisher) { value in
-                    if value == true {
-                        if let last = messages.last {
-                            scroolToBottom(proxy, last)
-                        }
-                    }
+                    newMessage = ""
                 }
-                
-                HStack {
-                    TextField("Send a message", text: $newMessage)
-                        .textFieldStyle(.roundedBorder)
-                        .focused($isFocused)
-                    Button {
-                        DispatchQueue.main.async {
-                            firestoreMassageManager.sendMessage(newMessage) { error in
-                                if let e = error {
-                                    errorMessage = e.localizedDescription
-                                    showAlert = true
-                                } else {
-                                    print("Successfully saved data")
-                                }
-                            }
-                            newMessage = ""
-                        }
-                    } label: {
-                        Image(systemName: "paperplane")
-                    }
-                }.padding()
             }
         }
         .onAppear() {
-            firestoreMassageManager.loadMessages { messages, error  in
+            firestoreMessageManager.loadMessages { messages, error  in
                 if let e = error {
                     print(e.localizedDescription)
                 } else {
@@ -88,31 +60,35 @@ struct ChatView: View {
         }.gesture(
             DragGesture().onChanged { _ in
                 isFocused = false
-            }
-        ).alert(isPresented: $showAlert) {
+            })
+        .alert(isPresented: $showAlert) {
             Alert(title: Text("Error"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    if let errorLogOut = authManager.logOutUser() {
-                        showAlert = true
-                        errorMessage = errorLogOut.localizedDescription
-                    }
+        .toolbar {toolbarLogOut}
+    }
+    
+    
+    
+    private var toolbarLogOut: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                if let errorLogOut = authManager.logOutUser() {
+                    errorMessage = errorLogOut.localizedDescription
+                    showAlert = true
+                } else {
                     shared.path = NavigationPath()
-                } label: {
-                    Image(systemName: "rectangle.portrait.and.arrow.right")
                 }
+            } label: {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
             }
         }
     }
-    
-    
-    func scroolToBottom(_ proxy: ScrollViewProxy, _ last: Message) {
-        withAnimation{
-            proxy.scrollTo(last, anchor: .bottom)
-        }
-    }
+}
+
+
+
+#Preview {
+    ChatView()
 }
 
 extension View {
@@ -132,8 +108,3 @@ extension View {
             .eraseToAnyPublisher()
     }
 }
-
-#Preview {
-    ChatView()
-}
-
