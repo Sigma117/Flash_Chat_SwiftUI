@@ -15,6 +15,8 @@ struct RegistrationView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var email: String = ""
     @State private var password: String = ""
+    
+    // Alert e Button
     @State private var showAlert: Bool = false
     @State private var errorMessage: String?
     @State private var disableButton: Bool = false

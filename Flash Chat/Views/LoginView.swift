@@ -17,6 +17,8 @@ struct LoginView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var email: String = "1@2.com"
     @State private var password: String = "123456"
+    
+    // Alert e Button
     @State private var showAlert: Bool = false
     @State private var errorMessage: String?
     @State private var disableButton: Bool = false

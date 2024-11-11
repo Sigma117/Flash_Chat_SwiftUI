@@ -12,15 +12,22 @@ import FirebaseFirestore
 
 struct ChatView: View {
     
+    // Navigation
     @EnvironmentObject var shared: NavigationManager
-    @State private var newMessage: String = ""
+    
+    // Firebase
+    @EnvironmentObject var authManager: AuthManager
+    @State private var firestoreMassageManager = FirestoreMessageManager()
+    
+    
+    // Alert, Button, Keyboard
     @State private var isKeyboardPresent: Bool = false
+    @State private var showAlert: Bool = false
+    @State private var errorMessage: String?
     @FocusState private var isFocused: Bool
     
-    let db = Firestore.firestore()
-    
+    @State private var newMessage: String = ""
     @State private var messages: [Message] = []
-    
     
     var body: some View {
         
@@ -51,9 +58,16 @@ struct ChatView: View {
                         .focused($isFocused)
                     Button {
                         DispatchQueue.main.async {
-                            sendMessage()
+                            firestoreMassageManager.sendMessage(newMessage) { error in
+                                if let e = error {
+                                    errorMessage = e.localizedDescription
+                                    showAlert = true
+                                } else {
+                                    print("Successfully saved data")
+                                }
+                            }
+                            newMessage = ""
                         }
-                        
                     } label: {
                         Image(systemName: "paperplane")
                     }
@@ -61,7 +75,13 @@ struct ChatView: View {
             }
         }
         .onAppear() {
-            loadMessages()
+            firestoreMassageManager.loadMessages { messages, error  in
+                if let e = error {
+                    print(e.localizedDescription)
+                } else {
+                    self.messages = messages
+                }
+            }
         }
         .onTapGesture {
             isFocused = false
@@ -69,69 +89,24 @@ struct ChatView: View {
             DragGesture().onChanged { _ in
                 isFocused = false
             }
-        ).toolbar {
+        ).alert(isPresented: $showAlert) {
+            Alert(title: Text("Error"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+        }
+        .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    logout()
+                    if let errorLogOut = authManager.logOutUser() {
+                        showAlert = true
+                        errorMessage = errorLogOut.localizedDescription
+                    }
                     shared.path = NavigationPath()
                 } label: {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
                 }
             }
         }
-        
     }
     
-    func loadMessages() {
-        self.messages = []
-        db.collection(K.FStore.collectionName)
-            .order(by: K.FStore.dateField)
-            .addSnapshotListener { querySnapshot, error in
-                if let e = error {
-                    print("There was an issue retrieving data from Firestore. \(e)")
-                } else {
-                    if let snapshotDocuments = querySnapshot?.documents {
-                        messages = []
-                        for doc in snapshotDocuments {
-                            let data = doc.data()
-                            if let sender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
-                                let newMessage = Message(sender: sender, body: messageBody)
-                                self.messages.append(newMessage)
-                            }
-                        }
-                    }
-                }
-            }
-    }
-    
-    
-    func sendMessage() {
-        if let messageSender = Auth.auth().currentUser?.email {
-            let messageBody = newMessage
-            newMessage = "" // is here and not after the else because, other wise we need to wait for the firestore before cleaning the TextField
-            
-            db.collection(K.FStore.collectionName).addDocument(data: [
-                K.FStore.senderField: messageSender,
-                K.FStore.bodyField: messageBody,
-                K.FStore.dateField: Date().timeIntervalSince1970 //second from 1/1/1970
-            ]) { error in
-                if let e = error {
-                    print("Error adding document: \(e)")
-                } else {
-                    print("Successfully saved data")
-                }
-            }
-        }
-    }
-    
-    func logout() {
-        let firebaseAuth = Auth.auth()
-        do {
-          try firebaseAuth.signOut()
-        } catch let signOutError as NSError {
-          print("Error signing out: %@", signOutError)
-        }
-    }
     
     func scroolToBottom(_ proxy: ScrollViewProxy, _ last: Message) {
         withAnimation{

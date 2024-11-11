@@ -10,8 +10,6 @@ import os
 import FirebaseAuth
 
 class AuthManager: ObservableObject {
-    
-    @Published var isAuthenticated: Bool = false
 
     func createUser(_ email: String, _ password: String, completion: @escaping (Error?) -> Void) {
         
@@ -19,7 +17,6 @@ class AuthManager: ObservableObject {
             if let e = error {
                 completion(e)
             } else {
-                self.isAuthenticated = true
                 completion(nil)
             }
         }
@@ -31,9 +28,19 @@ class AuthManager: ObservableObject {
             if let e = error {
                 completion(e)
             } else {
-                self.isAuthenticated = true
                 completion(nil)
             }
         }
+    }
+    
+    func logOutUser() -> NSError? {
+        do {
+          try Auth.auth().signOut()
+            return nil
+        } catch let signOutError as NSError {
+          print("Error signing out: %@", signOutError)
+            return signOutError
+        }
+        
     }
 }
